@@ -1,25 +1,23 @@
 const puppeteer = require("puppeteer");
-const matrixGen = require("./matrix-generator");
+const fs = require("fs");
+const path = require("path");
 
-// Adjustable variables
-const matrixCount = 13; // number of test runs
-const matrixSize = 4; // will generate matrixSize*(matrixSize-1) matrices
-const ignoreFirstN = 10; // number of warm-up test runs that will be ignored
+const testCaseExecCount = 3;
 
 //  Performance measuring script
 
 (async () => {
-  let inputData = [];
-  for (let i = 0; i < matrixCount; i++) {
-    inputData.push(matrixGen.generateMatrixPairs(matrixSize));
-  }
-  console.log(JSON.stringify(inputData));
 
-  await runTestSuite("js", inputData);
-  await runTestSuite("wasm", inputData);
+  const testDataFilePath = path.join(__dirname, "test-data", "data.json");
+
+  const rawData = fs.readFileSync(testDataFilePath);
+  const inputData = JSON.parse(rawData);
+
+  await runTestSuite("M", inputData.inputs);
+  // TODO: call for M, L
 })();
 
-async function runTestSuite(impl, inputData) {
+async function runTestSuite(size = "L", inputs) {
   const browser = await puppeteer.launch({ headless: false });
   const page = await browser.newPage();
 
@@ -29,42 +27,79 @@ async function runTestSuite(impl, inputData) {
     timeStorage.push(data);
   });
 
-  await page.goto("http://127.0.0.1:4173/");
-  // For dev build, replace the port 4137 ---> 5137
-
-  for (let i = 0; i < inputData.length; i++) {
-    const input = inputData[i];
-    let res = await testInput(page, input, impl);
-    timeStorage[i] = { ...res, ...timeStorage[i] };
+  await page.goto("http://localhost:5173/");
+  await page.$eval(`#height`, (input) => (input.value = ""));
+  await page.$eval(`#width`, (input) => (input.value = ""));
+  let imgWidth, imgHeight;
+  switch(size) {
+    case "M":
+      imgHeight = imgWidth = 1000;
+      break;
+    case "L":
+      imgHeight = imgWidth = 3000;
+      break;
+    default:
+      imgHeight = imgWidth = 300;
+      break;
   }
 
-  console.log(`${impl.toUpperCase()} time results:`);
-  if (matrixCount > ignoreFirstN) {
-    timeStorage.splice(0, ignoreFirstN);
+  await page.type(
+    `#height`,
+    imgHeight+""
+  );
+  await page.type(
+    `#width`,
+    imgWidth + ""
+  );
+
+
+  for (let i = 0; i < inputs.length; i++) {
+      for (let j = 0; j < testCaseExecCount; j++) {
+      await clearInputFields(page);
+      const input = inputs[i];
+      let res = await testInput(page, input);
+      timeStorage[i*testCaseExecCount + j] = { ...res, ...timeStorage[i*testCaseExecCount + j] };
+    }
   }
+
+  console.log(`Results:`);
+  // if (matrixCount > ignoreFirstN) {
+  //   timeStorage.splice(0, ignoreFirstN);
+  // }
   console.log(JSON.stringify(timeStorage));
 
   await browser.close();
+  // TODO: write results to an output file
 }
 
-async function testInput(page, input, impl) {
-  const initialHeapSize = (await page.metrics()).JSHeapUsedSize;
+async function clearInputFields(page) {
+  await page.$eval(`#imaginary`, (input) => (input.value = ""));
+  await page.$eval(`#real`, (input) => (input.value = ""));
 
+}
+
+async function testInput(page, input) {
+  const initialHeapSize = (await page.metrics()).JSHeapUsedSize;
   await page.type(
-    `.${impl}-impl #matrix1`,
-    matrixGen.serializeMatrix(input.matrix1)
+    `#real`,
+   input.real
   );
   await page.type(
-    `.${impl}-impl #matrix2`,
-    matrixGen.serializeMatrix(input.matrix2)
+    `#imaginary`,
+   input.imaginary
   );
+
+  await page.click(`#clear`);
+  await page.waitForSelector(`#status-message`, {hidden : true});
 
   // Measure execution time including render of the results
   const startTime = performance.now();
 
-  await page.click(`#${impl}-calc`);
 
-  await page.waitForSelector(`#${impl}-result`);
+  await page.click(`#generate-img`);
+
+  await page.waitForSelector(`#status-message`);
+
 
   const endTime = performance.now();
 
@@ -81,8 +116,6 @@ async function testInput(page, input, impl) {
     timeWithRender,
   };
 
-  // Clear the textareas for the next iteration
-  await page.$eval(`.${impl}-impl #matrix1`, (input) => (input.value = ""));
-  await page.$eval(`.${impl}-impl #matrix2`, (input) => (input.value = ""));
+
   return testRunResult;
 }
