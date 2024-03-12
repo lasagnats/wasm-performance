@@ -1,0 +1,9 @@
+name = 'Sample Wasm'
+
+version = "0.1.0"
+
+cli = "npm"
+
+[[crates]]
+name = "@rust/sample-module"
+link = true

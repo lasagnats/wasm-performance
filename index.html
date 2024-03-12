@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- <link rel="icon" href="/favicon.ico" /> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Julia Set Visualizer</title>
+  </head>
+  <body>
+    <div class="julia-generator">
+      <h1>Julia Set Visualizer</h1>
+      <form>
+        <label for="height">Height:</label><br />
+        <input type="number" id="height" name="height" value="700" /> px<br />
+        <label for="width">Width:</label><br />
+        <input type="number" id="width" name="width" value="700" /> px<br />
+        <label for="imaginary">Imaginary part:</label><br />
+        <input type="number" id="imaginary" name="imaginary" value="0.65" />
+        i<br />
+        <label for="real">Real part:</label><br />
+        <input type="number" id="real" name="real" value="-0.15" /><br />
+      </form>
+
+      <button id="generate-img">Generate</button>
+
+      <h2>Result:</h2>
+      <canvas id="generated-img"></canvas>
+      <div id="status-message"></div>
+    </div>
+
+    <script type="module">
+      import init, { julia_set } from "@rust/sample-module";
+      import { getInputValues } from "./input.utils.js";
+
+      const canvas = document.getElementById("generated-img");
+      const ctx = canvas.getContext("2d");
+
+      (async () => {
+        const wasm = await init(); // instantiate wasm module
+
+        function generateImage() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          const { width, height, imaginary, real } = getInputValues();
+          // Reset canvas size
+          canvas.width = width;
+          canvas.height = height;
+
+          const calcStartTime = performance.now();
+          const calcStartMemory = wasm.memory.buffer.byteLength;
+
+          const pixelArray = julia_set(width, height, real, imaginary);
+
+          const calcEndTime = performance.now();
+          const calcEndMemory = wasm.memory.buffer.byteLength;
+          const calcTime = calcEndTime - calcStartTime;
+          const calcMemDiff = calcEndMemory - calcStartMemory;
+
+          const imageData = ctx.createImageData(width, height);
+          const data = imageData.data;
+          // Draw julia set with red color
+          for (let i = 0; i < pixelArray.length; i++) {
+            data[i * 4] = pixelArray[i];
+            data[i * 4 + 1] = 0;
+            data[i * 4 + 2] = 0;
+            data[i * 4 + 3] = 255;
+          }
+          // if (window.onCustomEvent !== undefined) {
+          //   window.onCustomEvent({calcTime, calcStartMemory, calcMemDiff});
+          // }
+          ctx.putImageData(imageData, 0, 0);
+        }
+        const button_wasm = document.getElementById("generate-img");
+        button_wasm.addEventListener("click", generateImage);
+      })();
+    </script>
+  </body>
+</html>
