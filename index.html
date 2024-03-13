@@ -22,10 +22,13 @@
       </form>
 
       <button id="generate-img">Generate</button>
+      <button id="clear">Clear</button>
 
       <h2>Result:</h2>
+      <div id="status-message" style="display: none">
+        Image has been generated!
+      </div>
       <canvas id="generated-img"></canvas>
-      <div id="status-message"></div>
     </div>
 
     <script type="module">
@@ -34,12 +37,22 @@
 
       const canvas = document.getElementById("generated-img");
       const ctx = canvas.getContext("2d");
+      const resultOutput = document.getElementById("status-message");
 
       (async () => {
-        const wasm = await init(); // instantiate wasm module
+        const wasm = await init(); // Instantiate wasm module
 
-        function generateImage() {
+        // function generateJuliaImg() {
+        //   // clearResults();
+        //   // Set Timeout is need to trigger a re-render
+        //   // setTimeout(generateImage, 0);
+        // }
+
+        function clearResults() {
+          resultOutput.style.display = "none";
           ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+        function generateImage() {
           const { width, height, imaginary, real } = getInputValues();
           // Reset canvas size
           canvas.width = width;
@@ -64,13 +77,18 @@
             data[i * 4 + 2] = 0;
             data[i * 4 + 3] = 255;
           }
-          // if (window.onCustomEvent !== undefined) {
-          //   window.onCustomEvent({calcTime, calcStartMemory, calcMemDiff});
-          // }
+          if (window.onCustomEvent !== undefined) {
+            window.onCustomEvent({ calcTime, calcStartMemory, calcMemDiff });
+          }
           ctx.putImageData(imageData, 0, 0);
+          resultOutput.style.display = "block";
         }
-        const button_wasm = document.getElementById("generate-img");
-        button_wasm.addEventListener("click", generateImage);
+        const generateBtn = document.getElementById("generate-img");
+        generateBtn.addEventListener("click", generateImage);
+
+
+        const clearBtn = document.getElementById("clear");
+        clearBtn.addEventListener("click", clearResults);
       })();
     </script>
   </body>

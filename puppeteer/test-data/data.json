@@ -1,0 +1,16 @@
+{
+    "inputs": [
+        {
+            "imaginary": "0.2",
+            "real": "0.3"
+        },
+        {
+            "imaginary": "0.4",
+            "real": "-0.5"
+        },
+        {
+            "imaginary": "-0.6",
+            "real": "0.7"
+        }
+    ]
+}
