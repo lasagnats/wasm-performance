@@ -9,9 +9,8 @@
     "rsw:b": "rsw build",
     "dev": "vite",
     "preview": "vite preview",
-    "test:unit": "vitest",
     "build-only": "vite build",
-    "perf-test:js": "node puppeteer/test_js_impl.js"
+    "perf-test": "node puppeteer/test_js_impl.js"
   },
   "keywords": [],
   "author": "",

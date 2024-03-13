@@ -1,7 +1,7 @@
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsValue;
 use num_complex::Complex;
-use serde::{Deserialize, Serialize};
+use serde::{Serialize};
 
 
 #[wasm_bindgen]
@@ -24,7 +24,6 @@ fn generate_julia_set(width: u32, height: u32, real: f32, imaginary: f32) -> Vec
     // initial value of z
     let param_i = 1.5;
     let param_r = 1.5;
-    // let scale = 0.005;
 
     for y in 0..height {
         for x in 0..width {
