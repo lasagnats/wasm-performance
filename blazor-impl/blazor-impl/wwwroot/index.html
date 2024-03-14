@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>blazor-impl</title>
+    <base href="/" />
+    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link href="blazor-impl.styles.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div id="app">
+        <svg class="loading-progress">
+            <circle r="40%" cx="50%" cy="50%" />
+            <circle r="40%" cx="50%" cy="50%" />
+        </svg>
+        <div class="loading-progress-text"></div>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+    <script src="_framework/blazor.webassembly.js"></script>
+
+    <script type="text/javascript">
+        setTimeout(() => {
+
+            const generateBtn = document.getElementById("generate-img");
+            const canvas = document.getElementById("generated-img");
+            const title = document.getElementById("julia-title");
+            const ctx = canvas.getContext("2d");
+            const resultOutput = document.getElementById("status-message");
+
+            function getInputValues() {
+                const width = document.getElementById("width");
+                const height = document.getElementById("height");
+                const real = document.getElementById("real");
+                const imaginary = document.getElementById("imaginary");
+                if (!width.value || !height.value || !real.value || !imaginary.value)
+                    return;
+                return {
+                    width: +width.value,
+                    height: +height.value,
+                    real: +real.value,
+                    imaginary: +imaginary.value,
+                };
+            }
+
+            generateBtn.addEventListener("click", async () => {
+                const { width, height, imaginary, real } = getInputValues();
+                // Reset canvas size
+                canvas.width = width;
+                canvas.height = height;
+
+                const calcStartTime = performance.now();
+
+                const pixelArray = await DotNet.invokeMethodAsync('blazor-impl', 'GenerateJuliaSet', width, height, real, imaginary);
+
+                const calcEndTime = performance.now();
+                const calcTime = calcEndTime - calcStartTime;
+
+                const imageData = ctx.createImageData(width, height);
+                const data = imageData.data;
+                // Draw julia set with red color
+                for (let i = 0; i < pixelArray.length; i++) {
+                    data[i * 4] = pixelArray[i];
+                    data[i * 4 + 1] = 0;
+                    data[i * 4 + 2] = 0;
+                    data[i * 4 + 3] = 255;
+                }
+                if (window.onCustomEvent !== undefined) {
+                    window.onCustomEvent({ calcTime });
+                }
+                ctx.putImageData(imageData, 0, 0);
+                resultOutput.style.display = "block";
+
+            });
+
+            function clearResults() {
+                resultOutput.style.display = "none";
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+
+            const clearBtn = document.getElementById("clear");
+            clearBtn.addEventListener("click", clearResults);
+            title.style.display = "block";
+        }, 4000);
+    </script>
+</body>
+
+</html>
