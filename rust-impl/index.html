@@ -42,12 +42,6 @@
       (async () => {
         const wasm = await init(); // Instantiate wasm module
 
-        // function generateJuliaImg() {
-        //   // clearResults();
-        //   // Set Timeout is need to trigger a re-render
-        //   // setTimeout(generateImage, 0);
-        // }
-
         function clearResults() {
           resultOutput.style.display = "none";
           ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -59,14 +53,11 @@
           canvas.height = height;
 
           const calcStartTime = performance.now();
-          const calcStartMemory = wasm.memory.buffer.byteLength;
 
           const pixelArray = julia_set(width, height, real, imaginary);
 
           const calcEndTime = performance.now();
-          const calcEndMemory = wasm.memory.buffer.byteLength;
           const calcTime = calcEndTime - calcStartTime;
-          const calcMemDiff = calcEndMemory - calcStartMemory;
 
           const imageData = ctx.createImageData(width, height);
           const data = imageData.data;
@@ -78,7 +69,7 @@
             data[i * 4 + 3] = 255;
           }
           if (window.onCustomEvent !== undefined) {
-            window.onCustomEvent({ calcTime, calcStartMemory, calcMemDiff });
+            window.onCustomEvent({ calcTime });
           }
           ctx.putImageData(imageData, 0, 0);
           resultOutput.style.display = "block";

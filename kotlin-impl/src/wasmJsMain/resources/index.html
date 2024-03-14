@@ -84,7 +84,6 @@
           canvas.height = height;
 
           const calcStartTime = performance.now();
-          const calcStartMemory = wasm.default.memory.buffer.byteLength;
 
           const pixelArray = wasm.default.generateJuliaSet(
             width,
@@ -94,9 +93,7 @@
           );
 
           const calcEndTime = performance.now();
-          const calcEndMemory = wasm.default.memory.buffer.byteLength;
           const calcTime = calcEndTime - calcStartTime;
-          const calcMemDiff = calcEndMemory - calcStartMemory;
 
           const imageData = ctx.createImageData(width, height);
           const data = imageData.data;
@@ -108,7 +105,7 @@
             data[i * 4 + 3] = 255;
           }
           if (window.onCustomEvent !== undefined) {
-            window.onCustomEvent({ calcTime, calcStartMemory, calcMemDiff });
+            window.onCustomEvent({ calcTime });
           }
           ctx.putImageData(imageData, 0, 0);
           resultOutput.style.display = "block";

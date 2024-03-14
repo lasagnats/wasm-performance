@@ -6,6 +6,7 @@ const testCaseExecCount = 3;
 
 //  Performance measuring script
 
+
 (async () => {
 
   const testDataFilePath = path.join(__dirname, "test-data", "data.json");
@@ -27,7 +28,7 @@ async function runTestSuite(size = "L", inputs) {
     timeStorage.push(data);
   });
 
-  await page.goto("http://localhost:5173/");
+  await page.goto("http://127.0.0.1:8087/");
   await page.$eval(`#height`, (input) => (input.value = ""));
   await page.$eval(`#width`, (input) => (input.value = ""));
   let imgWidth, imgHeight;
@@ -51,6 +52,7 @@ async function runTestSuite(size = "L", inputs) {
     `#width`,
     imgWidth + ""
   );
+
 
 
   for (let i = 0; i < inputs.length; i++) {
@@ -107,7 +109,7 @@ async function testInput(page, input) {
 
   const performanceMetrics = await page.metrics();
   const heapSize = performanceMetrics.JSHeapUsedSize;
-  // In order to convert to megaebytes
+  // In order to convert to megabytes
   // const heapMB = performanceMetrics.JSHeapUsedSize / (1024 * 1024);
   const deltaHeapSize = performanceMetrics.JSHeapUsedSize - initialHeapSize;
   const testRunResult = {

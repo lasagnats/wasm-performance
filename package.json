@@ -1,15 +1,15 @@
 {
-  "name": "kotlin",
+  "name": "julia-fractal",
   "version": "1.0.0",
-  "description": "This example showcases a Kotlin/Wasm app. The application shows \"Hello World\" in the browser using DOM API.",
+  "description": "This is a collection of WASM Julia Set image generators & a performance measuring script for them.",
   "main": "index.js",
   "scripts": {
     "perf-test": "node puppeteer/test_js_impl.js"
   },
+  "author": "",
   "license": "ISC",
   "dependencies": {
     "puppeteer": "^21.4.1",
     "puppeteer-heap-snapshot": "^0.1.8"
   }
 }
-
