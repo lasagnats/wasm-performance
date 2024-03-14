@@ -9,8 +9,7 @@
     "rsw:b": "rsw build",
     "dev": "vite",
     "preview": "vite preview",
-    "build-only": "vite build",
-    "perf-test": "node puppeteer/test_js_impl.js"
+    "build-only": "vite build"
   },
   "keywords": [],
   "author": "",
@@ -27,9 +26,5 @@
     "vite-plugin-rsw": "^2.0.11",
     "vite-plugin-wasm": "^3.2.2",
     "vue-tsc": "^1.8.8"
-  },
-  "dependencies": {
-    "puppeteer": "^21.4.1",
-    "puppeteer-heap-snapshot": "^0.1.8"
   }
 }

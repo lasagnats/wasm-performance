@@ -1,7 +1,6 @@
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsValue;
 use num_complex::Complex;
-use serde::{Serialize};
 
 
 #[wasm_bindgen]

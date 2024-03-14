@@ -80,12 +80,11 @@
           data[i * 4 + 3] = 255;
         }
         if (window.onCustomEvent !== undefined) {
-          window.onCustomEvent({ calcTime, calcStartMemory, calcMemDiff });
+          window.onCustomEvent({ calcTime });
         }
         ctx.putImageData(imageData, 0, 0);
         resultOutput.style.display = "block";
 
-        console.log("This is zhmih: ", pixelArray);
       });
 
       function clearResults() {

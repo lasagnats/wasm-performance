@@ -1,118 +1,118 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8"/>
-        <title>Kotlin-"keyed"</title>
-        <link href="/css/currentStyle.css" rel="stylesheet"/>
-    </head>
-    <body>
-        <div id='main'>
-            <div class="julia-generator">
-                <h1>Julia Set Visualizer</h1>
-                <form>
-                    <label for="height">Height:</label><br />
-                    <input type="number" id="height" name="height" value="700" /> px<br />
-                    <label for="width">Width:</label><br />
-                    <input type="number" id="width" name="width" value="700" /> px<br />
-                    <label for="imaginary">Imaginary part:</label><br />
-                    <input type="number" id="imaginary" name="imaginary" value="0.65" />
-                    i<br />
-                    <label for="real">Real part:</label><br />
-                    <input type="number" id="real" name="real" value="-0.15" /><br />
-                </form>
+  <head>
+    <meta charset="utf-8" />
+    <title>Kotlin/WASM Julia Set Generator</title>
+  </head>
+  <body>
+    <div id="main">
+      <div class="julia-generator">
+        <h1>Julia Set Visualizer</h1>
+        <form>
+          <label for="height">Height:</label><br />
+          <input type="number" id="height" name="height" value="700" /> px<br />
+          <label for="width">Width:</label><br />
+          <input type="number" id="width" name="width" value="700" /> px<br />
+          <label for="imaginary">Imaginary part:</label><br />
+          <input type="number" id="imaginary" name="imaginary" value="0.65" />
+          i<br />
+          <label for="real">Real part:</label><br />
+          <input type="number" id="real" name="real" value="-0.15" /><br />
+        </form>
 
-                <button id="generate-img">Generate</button>
-                <button id="clear">Clear</button>
+        <button id="generate-img">Generate</button>
+        <button id="clear">Clear</button>
 
-                <h2>Result:</h2>
-                <div id="status-message" style="display: none">
-                    Image has been generated!
-                </div>
-                <canvas id="generated-img"></canvas>
-            </div>
-
+        <h2>Result:</h2>
+        <div id="status-message" style="display: none">
+          Image has been generated!
         </div>
-        <script src="kotlin-wasm-benchmark.js"></script>
-        <script type="application/javascript">
-            const unhandledError = (event, error) => {
-                if (error instanceof WebAssembly.CompileError) {
-                    document.getElementById("warning").style.display="initial";
+        <canvas id="generated-img"></canvas>
+      </div>
+    </div>
+    <script src="kotlin-wasm-benchmark.js"></script>
+    <script type="application/javascript">
+      const unhandledError = (event, error) => {
+        if (error instanceof WebAssembly.CompileError) {
+          document.getElementById("warning").style.display = "initial";
 
-                    // Hide a Scary Webpack Overlay which is less informative in this case.
-                    const webpackOverlay = document.getElementById("webpack-dev-server-client-overlay");
-                    if (webpackOverlay != null) webpackOverlay.style.display="none";
-                }
-            }
-            addEventListener("error", (event) => unhandledError(event, event.error));
-            addEventListener("unhandledrejection", (event) => unhandledError(event, event.reason));
-        </script>
-        <script type="application/javascript">
+          // Hide a Scary Webpack Overlay which is less informative in this case.
+          const webpackOverlay = document.getElementById(
+            "webpack-dev-server-client-overlay"
+          );
+          if (webpackOverlay != null) webpackOverlay.style.display = "none";
+        }
+      };
+      addEventListener("error", (event) => unhandledError(event, event.error));
+      addEventListener("unhandledrejection", (event) =>
+        unhandledError(event, event.reason)
+      );
+    </script>
+    <script type="application/javascript">
+      const canvas = document.getElementById("generated-img");
+      const ctx = canvas.getContext("2d");
+      const resultOutput = document.getElementById("status-message");
 
-            const canvas = document.getElementById("generated-img");
-            const ctx = canvas.getContext("2d");
-            const resultOutput = document.getElementById("status-message");
+      function clearResults() {
+        resultOutput.style.display = "none";
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
 
-            function clearResults() {
-                resultOutput.style.display = "none";
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-            }
+      function getInputValues() {
+        const width = document.getElementById("width");
+        const height = document.getElementById("height");
+        const real = document.getElementById("real");
+        const imaginary = document.getElementById("imaginary");
+        if (!width.value || !height.value || !real.value || !imaginary.value)
+          return;
+        return {
+          width: +width.value,
+          height: +height.value,
+          real: +real.value,
+          imaginary: +imaginary.value,
+        };
+      }
 
-            function getInputValues() {
-              const width = document.getElementById("width");
-              const height = document.getElementById("height");
-              const real = document.getElementById("real");
-              const imaginary = document.getElementById("imaginary");
-              if (!width.value || !height.value || !real.value || !imaginary.value) return;
-              return {
-                width: +width.value,
-                height: +height.value,
-                real: +real.value,
-                imaginary: +imaginary.value,
-              };
-            }
+      const clearBtn = document.getElementById("clear");
+      clearBtn.addEventListener("click", clearResults);
 
-            const clearBtn = document.getElementById("clear");
-            clearBtn.addEventListener("click", clearResults);
+      this["kotlin-wasm-benchmark"].then(async (wasm) => {
+        function generateImage() {
+          const { width, height, imaginary, real } = getInputValues();
+          // Reset canvas size
+          canvas.width = width;
+          canvas.height = height;
 
-            this["kotlin-wasm-benchmark"].then(async (wasm) => {
-                function generateImage() {
-                  const { width, height, imaginary, real } = getInputValues();
-                  // Reset canvas size
-                  canvas.width = width;
-                  canvas.height = height;
+          const calcStartTime = performance.now();
 
-                  const calcStartTime = performance.now();
-                  const calcStartMemory = wasm.default.memory.buffer.byteLength;
+          const pixelArray = wasm.default.generateJuliaSet(
+            width,
+            height,
+            real,
+            imaginary
+          );
 
-                  const pixelArray = wasm.default.generateJuliaSet(width, height, real, imaginary);
+          const calcEndTime = performance.now();
+          const calcTime = calcEndTime - calcStartTime;
 
-                  const calcEndTime = performance.now();
-                  const calcEndMemory = wasm.default.memory.buffer.byteLength;
-                  const calcTime = calcEndTime - calcStartTime;
-                  const calcMemDiff = calcEndMemory - calcStartMemory;
-
-                  const imageData = ctx.createImageData(width, height);
-                  const data = imageData.data;
-                  // Draw julia set with red color
-                  for (let i = 0; i < pixelArray.length; i++) {
-                    data[i * 4] = pixelArray[i];
-                    data[i * 4 + 1] = 0;
-                    data[i * 4 + 2] = 0;
-                    data[i * 4 + 3] = 255;
-                  }
-                  if (window.onCustomEvent !== undefined) {
-                    window.onCustomEvent({ calcTime, calcStartMemory, calcMemDiff });
-                  }
-                  ctx.putImageData(imageData, 0, 0);
-                  resultOutput.style.display = "block";
-                }
-                const generateBtn = document.getElementById("generate-img");
-                generateBtn.addEventListener("click", generateImage);
-
-
-            })
-
-        </script>
-
-          </body>
-      </html>
+          const imageData = ctx.createImageData(width, height);
+          const data = imageData.data;
+          // Draw julia set with red color
+          for (let i = 0; i < pixelArray.length; i++) {
+            data[i * 4] = pixelArray[i];
+            data[i * 4 + 1] = 0;
+            data[i * 4 + 2] = 0;
+            data[i * 4 + 3] = 255;
+          }
+          if (window.onCustomEvent !== undefined) {
+            window.onCustomEvent({ calcTime });
+          }
+          ctx.putImageData(imageData, 0, 0);
+          resultOutput.style.display = "block";
+        }
+        const generateBtn = document.getElementById("generate-img");
+        generateBtn.addEventListener("click", generateImage);
+      });
+    </script>
+  </body>
+</html>
