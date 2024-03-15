@@ -14,11 +14,11 @@ const testCaseExecCount = 3;
   const rawData = fs.readFileSync(testDataFilePath);
   const inputData = JSON.parse(rawData);
 
-  await runTestSuite("M", inputData.inputs);
+  await runTestSuite(inputData.inputs, "M");
   // TODO: call for M, L
 })();
 
-async function runTestSuite(size = "L", inputs) {
+async function runTestSuite(inputs, size = "S") {
   const browser = await puppeteer.launch({ headless: false });
   const page = await browser.newPage();
 
@@ -29,6 +29,8 @@ async function runTestSuite(size = "L", inputs) {
   });
 
   await page.goto("http://127.0.0.1:8087/");
+  await page.waitForSelector(`#julia-title`, { visible: true });
+
   await page.$eval(`#height`, (input) => (input.value = ""));
   await page.$eval(`#width`, (input) => (input.value = ""));
   let imgWidth, imgHeight;
@@ -100,7 +102,7 @@ async function testInput(page, input) {
 
   await page.click(`#generate-img`);
 
-  await page.waitForSelector(`#status-message`);
+  await page.waitForSelector(`#status-message`, { visible: true });
 
 
   const endTime = performance.now();
