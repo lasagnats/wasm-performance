@@ -46,6 +46,7 @@
           resultOutput.style.display = "none";
           ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
+
         function generateImage() {
           const { width, height, imaginary, real } = getInputValues();
           // Reset canvas size
@@ -76,7 +77,6 @@
         }
         const generateBtn = document.getElementById("generate-img");
         generateBtn.addEventListener("click", generateImage);
-
 
         const clearBtn = document.getElementById("clear");
         clearBtn.addEventListener("click", clearResults);
