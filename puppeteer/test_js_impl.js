@@ -2,7 +2,7 @@ const puppeteer = require("puppeteer");
 const fs = require("fs");
 const path = require("path");
 
-const testCaseExecCount = 3;
+const testCaseExecCount = 60;
 
 //  Performance measuring script
 

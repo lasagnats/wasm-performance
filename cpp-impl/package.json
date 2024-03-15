@@ -1,0 +1,12 @@
+{
+  "name": "cpp-impl",
+  "version": "1.0.0",
+  "description": "This is a Cpp/WASM Julia Set image generator implementation",
+  "main": "index.js",
+  "scripts": {
+    "build": "sh ./run.sh",
+    "serve": "npx http-server -p 8087"
+  },
+  "author": "",
+  "license": "ISC"
+}
