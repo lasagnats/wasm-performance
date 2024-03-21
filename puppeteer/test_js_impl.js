@@ -2,7 +2,7 @@ const puppeteer = require("puppeteer");
 const fs = require("fs");
 const path = require("path");
 
-const testCaseExecCount = 60;
+const testCaseExecCount = 20;
 
 //  Performance measuring script
 
@@ -14,7 +14,9 @@ const testCaseExecCount = 60;
   const rawData = fs.readFileSync(testDataFilePath);
   const inputData = JSON.parse(rawData);
 
+  await runTestSuite(inputData.inputs, "S");
   await runTestSuite(inputData.inputs, "M");
+  await runTestSuite(inputData.inputs, "L");
   // TODO: call for M, L
 })();
 
@@ -66,6 +68,16 @@ async function runTestSuite(inputs, size = "S") {
     }
   }
 
+  let printable = "";
+  timeStorage.forEach(el => {
+    printable += `${el.heapSize};${el.deltaHeapSize};${el.timeWithRender}\n`;
+  })
+
+  try {
+    fs.writeFileSync(`./${size}_test.txt`, printable);
+  } catch (err) {
+    console.error(err);
+  }
   console.log(`Results:`);
   // if (matrixCount > ignoreFirstN) {
   //   timeStorage.splice(0, ignoreFirstN);
