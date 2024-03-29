@@ -20,7 +20,7 @@ const testCaseExecCount = 20;
 })();
 
 async function runTestSuite(inputs, size = "S") {
-  const browser = await puppeteer.launch({ headless: false });
+  const browser = await puppeteer.launch({ headless: false, args: ["--js-flags=--expose-gc", "--enable-benchmarking"] });
   const page = await browser.newPage();
 
   let timeStorage = [];
@@ -60,10 +60,13 @@ async function runTestSuite(inputs, size = "S") {
 
   for (let i = 0; i < inputs.length; i++) {
       for (let j = 0; j < testCaseExecCount; j++) {
-      await clearInputFields(page);
-      const input = inputs[i];
-      let res = await testInput(page, input);
-      timeStorage[i*testCaseExecCount + j] = { ...res, ...timeStorage[i*testCaseExecCount + j] };
+        await clearInputFields(page);
+        const input = inputs[i];
+        let res = await testInput(page, input);
+        await forceGarbageCollector(page);
+        await wait(40);
+        let memUsage = (await page.evaluate("performance.measureUserAgentSpecificMemory()")).bytes / 1024 / 1024;
+        timeStorage[i*testCaseExecCount + j] = { ...res, ...timeStorage[i*testCaseExecCount + j], memUsageMB: memUsage };
     }
   }
 
@@ -132,3 +135,11 @@ async function testInput(page, input) {
 
   return testRunResult;
 }
+
+async function forceGarbageCollector(page) {
+  for (let i = 0; i < 5; i++) {
+    await page.evaluate("window.gc()");
+  }
+}
+
+function wait (delay = 1000) { return new Promise((res) => setTimeout(res, delay)); }

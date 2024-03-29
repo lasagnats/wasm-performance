@@ -1,0 +1,20 @@
+{
+  "name": "serv",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start:js": "node index.js /mnt/c/Users/alina/Projects/julia-fractal/js-impl",
+    "start:blazor": "node index.js /mnt/c/Users/alina/Projects/julia-fractal/blazor-impl/blazor-impl/bin/Release/net8.0/browser-wasm/publish/wwwroot",
+    "start:cpp": "node index.js /mnt/c/Users/alina/Projects/julia-fractal/cpp-impl",
+    "start:go": "node index.js /mnt/c/Users/alina/Projects/julia-fractal/golang-impl",
+    "start:kotlin": "node index.js /mnt/c/Users/alina/Projects/julia-fractal/kotlin-impl/build/dist/wasmJs/productionExecutable",
+    "start:rust": "node index.js /mnt/c/Users/alina/Projects/julia-fractal/rust-impl/dist"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
