@@ -66,13 +66,14 @@ async function runTestSuite(inputs, size = "S") {
         await forceGarbageCollector(page);
         await wait(40);
         let memUsage = (await page.evaluate("performance.measureUserAgentSpecificMemory()")).bytes / 1024 / 1024;
+        // timeStorage[i*testCaseExecCount + j] = { ...res, ...timeStorage[i*testCaseExecCount + j]};
         timeStorage[i*testCaseExecCount + j] = { ...res, ...timeStorage[i*testCaseExecCount + j], memUsageMB: memUsage };
     }
   }
 
   let printable = "";
   timeStorage.forEach(el => {
-    // JavaScript implementation does NTO have el.calcTime
+    // JavaScript implementation does NOT  have el.calcTime
     // printable += `${el.heapSize};${el.deltaHeapSize};${el.timeWithRender}\n`;
     printable += `${el.heapSize};${el.deltaHeapSize};${el.timeWithRender};${el.calcTime}\n`;
   })
@@ -87,6 +88,7 @@ async function runTestSuite(inputs, size = "S") {
 
   await browser.close();
 }
+
 
 async function clearInputFields(page) {
   await page.$eval(`#imaginary`, (input) => (input.value = ""));

@@ -13,6 +13,6 @@ Then, run `npm install` in order to install Puppeteer-related dependencies.
 
 ## Conduct performance testing
 
-1. Run the npm scrip `npm run start:<implementation name>`, for instance, `npm run start:cpp` from /puppeteer/serv/ to make the app available on your local machine [http://127.0.0.1:8087](http://127.0.0.1:8087).
+1. Run the npm script `npm run start:<implementation name>`, for instance, `npm run start:cpp` from /puppeteer/serv/ to make the app available on your local machine [http://127.0.0.1:8087](http://127.0.0.1:8087).
 2. Execute `npm run perf-test` from the root folder of this project.
 

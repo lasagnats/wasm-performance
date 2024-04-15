@@ -35,6 +35,9 @@
       const canvas = document.getElementById("generated-img");
       const ctx = canvas.getContext("2d");
       const resultOutput = document.getElementById("status-message");
+      var pixelArray;
+      // pixelArray variable should be global
+      // so that memory consumption can be measured accurately
 
       generateBtn.addEventListener("click", () => {
         const { width, height, imaginary, real } = getInputValues();
@@ -43,7 +46,7 @@
         canvas.height = height;
 
         const calcStartTime = performance.now();
-        const pixelArray = generateJulia(width, height, real, imaginary);
+        pixelArray = generateJulia(width, height, real, imaginary);
         const calcEndTime = performance.now();
         const calcTime = calcEndTime - calcStartTime;
 
