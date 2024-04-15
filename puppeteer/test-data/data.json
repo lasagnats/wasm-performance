@@ -9,8 +9,36 @@
             "real": "-0.5"
         },
         {
-            "imaginary": "-0.6",
-            "real": "0.7"
+            "imaginary": "0.65",
+            "real": "-0.15"
+        },
+        {
+            "imaginary": "0.65",
+            "real": "-0.19"
+        },
+        {
+            "imaginary": "0.23",
+            "real": "-0.1"
+        },
+        {
+            "imaginary": "0.55",
+            "real": "0.11"
+        },
+        {
+            "imaginary": "0.42",
+            "real": "0.09"
+        },
+        {
+            "imaginary": "0.8",
+            "real": "-0.08"
+        },
+        {
+            "imaginary": "0.78",
+            "real": "-0.1"
+        },
+        {
+            "imaginary": "0.88",
+            "real": "-0.1"
         }
     ]
 }

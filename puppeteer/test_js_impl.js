@@ -2,7 +2,7 @@ const puppeteer = require("puppeteer");
 const fs = require("fs");
 const path = require("path");
 
-const testCaseExecCount = 60;
+const testCaseExecCount = 20;
 
 //  Performance measuring script
 
@@ -14,12 +14,13 @@ const testCaseExecCount = 60;
   const rawData = fs.readFileSync(testDataFilePath);
   const inputData = JSON.parse(rawData);
 
+  await runTestSuite(inputData.inputs, "S");
   await runTestSuite(inputData.inputs, "M");
-  // TODO: call for M, L
+  await runTestSuite(inputData.inputs, "L");
 })();
 
 async function runTestSuite(inputs, size = "S") {
-  const browser = await puppeteer.launch({ headless: false });
+  const browser = await puppeteer.launch({ headless: false, args: ["--js-flags=--expose-gc", "--enable-benchmarking"] });
   const page = await browser.newPage();
 
   let timeStorage = [];
@@ -59,22 +60,35 @@ async function runTestSuite(inputs, size = "S") {
 
   for (let i = 0; i < inputs.length; i++) {
       for (let j = 0; j < testCaseExecCount; j++) {
-      await clearInputFields(page);
-      const input = inputs[i];
-      let res = await testInput(page, input);
-      timeStorage[i*testCaseExecCount + j] = { ...res, ...timeStorage[i*testCaseExecCount + j] };
+        await clearInputFields(page);
+        const input = inputs[i];
+        let res = await testInput(page, input);
+        await forceGarbageCollector(page);
+        await wait(40);
+        let memUsage = (await page.evaluate("performance.measureUserAgentSpecificMemory()")).bytes / 1024 / 1024;
+        // timeStorage[i*testCaseExecCount + j] = { ...res, ...timeStorage[i*testCaseExecCount + j]};
+        timeStorage[i*testCaseExecCount + j] = { ...res, ...timeStorage[i*testCaseExecCount + j], memUsageMB: memUsage };
     }
   }
 
+  let printable = "";
+  timeStorage.forEach(el => {
+    // JavaScript implementation does NOT  have el.calcTime
+    // printable += `${el.heapSize};${el.deltaHeapSize};${el.timeWithRender}\n`;
+    printable += `${el.heapSize};${el.deltaHeapSize};${el.timeWithRender};${el.calcTime}\n`;
+  })
+
+  try {
+    fs.writeFileSync(`./${size}_test.txt`, printable);
+  } catch (err) {
+    console.error(err);
+  }
   console.log(`Results:`);
-  // if (matrixCount > ignoreFirstN) {
-  //   timeStorage.splice(0, ignoreFirstN);
-  // }
   console.log(JSON.stringify(timeStorage));
 
   await browser.close();
-  // TODO: write results to an output file
 }
+
 
 async function clearInputFields(page) {
   await page.$eval(`#imaginary`, (input) => (input.value = ""));
@@ -123,3 +137,11 @@ async function testInput(page, input) {
 
   return testRunResult;
 }
+
+async function forceGarbageCollector(page) {
+  for (let i = 0; i < 5; i++) {
+    await page.evaluate("window.gc()");
+  }
+}
+
+function wait (delay = 1000) { return new Promise((res) => setTimeout(res, delay)); }
