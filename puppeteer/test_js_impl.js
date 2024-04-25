@@ -63,18 +63,12 @@ async function runTestSuite(inputs, size = "S") {
         await clearInputFields(page);
         const input = inputs[i];
         let res = await testInput(page, input);
-        await forceGarbageCollector(page);
-        await wait(40);
-        let memUsage = (await page.evaluate("performance.measureUserAgentSpecificMemory()")).bytes / 1024 / 1024;
-        // timeStorage[i*testCaseExecCount + j] = { ...res, ...timeStorage[i*testCaseExecCount + j]};
-        timeStorage[i*testCaseExecCount + j] = { ...res, ...timeStorage[i*testCaseExecCount + j], memUsageMB: memUsage };
+        timeStorage[i*testCaseExecCount + j] = { ...res, ...timeStorage[i*testCaseExecCount + j]};
     }
   }
 
   let printable = "";
   timeStorage.forEach(el => {
-    // JavaScript implementation does NOT  have el.calcTime
-    // printable += `${el.heapSize};${el.deltaHeapSize};${el.timeWithRender}\n`;
     printable += `${el.heapSize};${el.deltaHeapSize};${el.timeWithRender};${el.calcTime}\n`;
   })
 
@@ -137,11 +131,3 @@ async function testInput(page, input) {
 
   return testRunResult;
 }
-
-async function forceGarbageCollector(page) {
-  for (let i = 0; i < 5; i++) {
-    await page.evaluate("window.gc()");
-  }
-}
-
-function wait (delay = 1000) { return new Promise((res) => setTimeout(res, delay)); }
